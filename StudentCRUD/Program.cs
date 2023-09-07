@@ -1,10 +1,14 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StudentCRUD.DataAccess;
 using StudentCRUD.Model.Helper;
 using StudentCRUD.Repository;
+using StudentCRUD.Repository.User;
 using StudentCRUD.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +24,7 @@ builder .Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkSt
 
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 //automapper configuration
 var automapper = new MapperConfiguration(item => item.AddProfile(new MapperHandler()));
@@ -37,6 +42,23 @@ builder.Services.AddSingleton(serviceProvider =>
 }
 
 );
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("secretKeyveryimportant123456789")),
+        ValidateAudience = false,
+        ValidateIssuer = false,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -48,6 +70,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

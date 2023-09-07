@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudentCRUD.Dtos;
 using StudentCRUD.Repository;
@@ -7,6 +8,7 @@ namespace StudentCRUD.Controllers
 {
     [Route("api/")]
     [ApiController]
+    [Authorize(Roles = "admin")]
     public class StudentController : ControllerBase
     {
         private readonly IStudentRepository _studentRepository;

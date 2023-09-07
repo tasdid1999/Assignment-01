@@ -15,5 +15,8 @@ namespace StudentCRUD.Dtos
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage ="Password does not match")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string Role { get; set; }
     }
 }

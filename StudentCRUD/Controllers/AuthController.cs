@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using StudentCRUD.Dtos;
 using StudentCRUD.Repository;
+using StudentCRUD.Services.AuthService;
 
 namespace StudentCRUD.Controllers
 {
@@ -10,22 +12,24 @@ namespace StudentCRUD.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthRepository _authRepository;
-        public AuthController(IAuthRepository authRepository)
+        private readonly IUserRepository _userRepository;
+        
+        public AuthController(IAuthRepository authRepository, IUserRepository userRepository)
         {
             _authRepository = authRepository;
+            _userRepository = userRepository;
         }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm]UserRegisterRequest user)
         {
-
             try
             {
                 if (user is null)
                 {
                     return BadRequest();
                 }
-                if(await _authRepository.IsEmailExistAsync(user.Email))
+                if(await _userRepository.IsEmailExistAsync(user.Email))
                 {
                     return BadRequest("Email Already Exist");
                 }
@@ -58,17 +62,25 @@ namespace StudentCRUD.Controllers
                     return BadRequest();
                 }
 
-                if (!await _authRepository.IsUserExistAsync(user.Email, user.Password))
+                if (!await _userRepository.IsUserExistAsync(user.Email, user.Password))
                 {
                     return BadRequest("Wrong Credential");
                 }
 
                 var loginResponse = await _authRepository.LoginAsync(user);
 
-                return loginResponse ? Ok() : StatusCode(500, "Internal Server Error");
+                if(loginResponse)
+                {
+                    var tokenFactory = new JwtTokenFactory();
+
+                    var tokenResponse = tokenFactory.CreateJWT(await _userRepository.GetUserForTokenAsync(user.Email));
+
+                    return Ok(tokenResponse);
+                   
+                }
+
+                return BadRequest();
             }
-
-
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
