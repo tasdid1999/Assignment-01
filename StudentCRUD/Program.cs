@@ -8,6 +8,7 @@ using StudentCRUD.Model.Helper;
 using StudentCRUD.Repository;
 using StudentCRUD.Repository.User;
 using StudentCRUD.Services;
+using StudentCRUD.Services.Email;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +26,8 @@ builder .Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkSt
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.Configure<SmtpConfig>(builder.Configuration.GetSection("SMTPconfig"));
 //automapper configuration
 var automapper = new MapperConfiguration(item => item.AddProfile(new MapperHandler()));
 IMapper mapper = automapper.CreateMapper();

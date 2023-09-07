@@ -9,6 +9,8 @@ namespace StudentCRUD.Repository
 
         Task<bool> RegisterAsync(UserRegisterRequest user);
 
+        Task<bool> ForgotPassword(string email);
+
 
 
 

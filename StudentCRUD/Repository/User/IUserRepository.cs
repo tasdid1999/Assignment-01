@@ -8,6 +8,7 @@ namespace StudentCRUD.Repository
 
         Task<bool> IsUserExistAsync(string email, string password);
 
+        Task<bool> IsUserExistAsync(string email);
         Task<UserForToken> GetUserForTokenAsync(string email);
     }
 }

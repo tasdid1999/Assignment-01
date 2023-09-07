@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using StudentCRUD.Dtos;
+using StudentCRUD.Dtos.Auth;
 using StudentCRUD.Repository;
 using StudentCRUD.Services.AuthService;
+using StudentCRUD.Services.Email;
 
 namespace StudentCRUD.Controllers
 {
@@ -13,11 +15,13 @@ namespace StudentCRUD.Controllers
     {
         private readonly IAuthRepository _authRepository;
         private readonly IUserRepository _userRepository;
-        
-        public AuthController(IAuthRepository authRepository, IUserRepository userRepository)
+        private readonly IEmailService _emailService;
+
+        public AuthController(IAuthRepository authRepository, IUserRepository userRepository, IEmailService emailService)
         {
             _authRepository = authRepository;
             _userRepository = userRepository;
+            _emailService = emailService;
         }
 
         [HttpPost("Register")]
@@ -86,6 +90,33 @@ namespace StudentCRUD.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword([FromForm]string email)
+        {
+           if(string.IsNullOrEmpty(email))
+           {
+                return BadRequest();
+           }
+            var res = await _authRepository.ForgotPassword(email);
+
+            if (res)
+            {
+                return Ok("email send");
+            }
+            return BadRequest();
+        }
+        [HttpGet("resetPassword")]
+        public async Task<IActionResult> ResetPassword([FromQuery] string userId , [FromQuery] string token)
+        {
+            return Ok(token);
+        }
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordRequest resetPassword)
+        {
+            return Ok();
+        }
+
     }
 }
 

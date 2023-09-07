@@ -43,5 +43,12 @@ namespace StudentCRUD.Repository.User
             return user is not null && isPasswordExist ? true : false;
 
         }
+        public async Task<bool> IsUserExistAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            return user is not null ? true : false;
+
+        }
     }
 }

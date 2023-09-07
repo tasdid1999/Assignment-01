@@ -3,18 +3,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudentCRUD.Dtos;
 using StudentCRUD.Repository;
+using StudentCRUD.Services.Email;
 
 namespace StudentCRUD.Controllers
 {
     [Route("api/")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+   // [Authorize(Roles = "admin")]
     public class StudentController : ControllerBase
     {
         private readonly IStudentRepository _studentRepository;
-        public StudentController(IStudentRepository studentRepository)
+        
+        public StudentController(IStudentRepository studentRepository )
         {
             _studentRepository = studentRepository;
+            
         }
 
         [HttpPost("students")]
@@ -47,6 +50,7 @@ namespace StudentCRUD.Controllers
         {
             try
             {
+                
                 var listOfStudent = await _studentRepository.GetAllAsync();
 
                 if (listOfStudent is null)
