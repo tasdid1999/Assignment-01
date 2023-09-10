@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentCRUD.DataAccess;
 using StudentCRUD.Dtos;
+using StudentCRUD.Dtos.Auth;
 using StudentCRUD.Services.Email;
 
 namespace StudentCRUD.Repository
@@ -32,39 +33,7 @@ namespace StudentCRUD.Repository
 
         }
 
-        public async Task<bool> ForgotPassword(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-
-            if(user is not null)
-            {
-                var token = "abc";
-                string appDomain = $@"https://localhost:7257/api/";
-                string confirmLink = $"{appDomain}resetPassword?userId={user.Id}&token={token}";
-
-                var placeHolders = new List<KeyValuePair<string, string>>()
-                {
-                    new KeyValuePair<string, string>("userName" , user.UserName),
-                    new KeyValuePair<string, string>("link" ,confirmLink)
-                };
-                var emailOption = new UserEmailOption
-                {
-                    ToEmail = user.Email,
-                    Body = "",
-                    Subject = "Reset Password",
-                    PlaceHolder = placeHolders,
-                    TemplateName = "EmailTemplate"
-                    
-
-                };
-
-                await _emailService.SendEmail(emailOption);
-
-                return true;
-            }
-
-            return false;
-        }
+       
 
         public async Task<bool> LoginAsync(UserLoginRequest user)
         {
@@ -99,6 +68,18 @@ namespace StudentCRUD.Repository
            }
 
            return dbActionResult.Succeeded ? true : false;
+        }
+
+        public async Task<bool> ResetPassword(ResetPasswordRequest resetPassword)
+        {
+            var user = await _userManager.FindByIdAsync(resetPassword.UserId);
+            var result = await _userManager.ResetPasswordAsync(user, resetPassword.token, resetPassword.ConfirmPassword);
+
+            if(result.Succeeded)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

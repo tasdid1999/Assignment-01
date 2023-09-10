@@ -10,7 +10,10 @@ namespace StudentCRUD.Dtos.Auth
 
         [Required]
         [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage ="Password and confirm password should be same")]
         public string ConfirmPassword { get; set; }
+
+        public string UserId { get; set; }
 
         [Required]
         public string token { get; set; }

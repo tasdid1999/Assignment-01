@@ -13,18 +13,23 @@ namespace StudentCRUD.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private readonly IAuthService _authService;
         private readonly IAuthRepository _authRepository;
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
 
-        public AuthController(IAuthRepository authRepository, IUserRepository userRepository, IEmailService emailService)
+        public AuthController(IAuthService authService,
+                              IUserRepository userRepository,
+                              IEmailService emailService,
+                              IAuthRepository authRepository)
         {
-            _authRepository = authRepository;
+            _authService = authService;
             _userRepository = userRepository;
             _emailService = emailService;
+            _authRepository = authRepository;
         }
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromForm]UserRegisterRequest user)
         {
             try
@@ -55,7 +60,7 @@ namespace StudentCRUD.Controllers
         
 
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromForm]UserLoginRequest user)
         {
 
@@ -71,15 +76,13 @@ namespace StudentCRUD.Controllers
                     return BadRequest("Wrong Credential");
                 }
 
-                var loginResponse = await _authRepository.LoginAsync(user);
+                var isLogInSucces = await _authRepository.LoginAsync(user);
 
-                if(loginResponse)
+                if(isLogInSucces)
                 {
-                    var tokenFactory = new JwtTokenFactory();
+                    var  loginResponse = _authService.GetJwtToken(await _userRepository.GetUserForTokenAsync(user.Email));
 
-                    var tokenResponse = tokenFactory.CreateJWT(await _userRepository.GetUserForTokenAsync(user.Email));
-
-                    return Ok(tokenResponse);
+                    return Ok(loginResponse);
                    
                 }
 
@@ -94,27 +97,41 @@ namespace StudentCRUD.Controllers
         [HttpPost("forgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromForm]string email)
         {
-           if(string.IsNullOrEmpty(email))
-           {
-                return BadRequest();
-           }
-            var res = await _authRepository.ForgotPassword(email);
-
-            if (res)
+            try
             {
-                return Ok("email send");
+                if (string.IsNullOrEmpty(email))
+                {
+                    return BadRequest();
+                }
+                var res = await _authService.ForgotPassword(email);
+
+                return res ? Ok() : BadRequest();
             }
-            return BadRequest();
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
+
         [HttpGet("resetPassword")]
-        public async Task<IActionResult> ResetPassword([FromQuery] string userId , [FromQuery] string token)
+        public  IActionResult ResetPassword([FromQuery] string userId , [FromQuery] string token)
         {
-            return Ok(token);
+            return Ok(new {Token = token});
         }
+
         [HttpPost("resetPassword")]
         public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordRequest resetPassword)
         {
-            return Ok();
+            try
+            {
+                var result = await _authRepository.ResetPassword(resetPassword);
+
+                return result ? Ok("password update succesful!") : BadRequest();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
     }

@@ -8,6 +8,7 @@ using StudentCRUD.Model.Helper;
 using StudentCRUD.Repository;
 using StudentCRUD.Repository.User;
 using StudentCRUD.Services;
+using StudentCRUD.Services.AuthService;
 using StudentCRUD.Services.Email;
 using System.Text;
 
@@ -21,12 +22,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("conn")));
-builder .Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder .Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.Configure<SmtpConfig>(builder.Configuration.GetSection("SMTPconfig"));
 //automapper configuration
 var automapper = new MapperConfiguration(item => item.AddProfile(new MapperHandler()));

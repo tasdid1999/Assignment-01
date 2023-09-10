@@ -10,7 +10,7 @@ namespace StudentCRUD.Services.AuthService
 {
     public class JwtTokenFactory
     {
-        public LoginResponse CreateJWT(UserForToken user)
+        public  LoginResponse CreateJWT(UserForToken user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -28,7 +28,7 @@ namespace StudentCRUD.Services.AuthService
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = identity,
-                Expires = DateTime.UtcNow.AddDays(1),
+                Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = credential
             };
 

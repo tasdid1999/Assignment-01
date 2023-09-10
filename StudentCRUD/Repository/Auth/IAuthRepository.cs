@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StudentCRUD.Dtos;
+using StudentCRUD.Dtos.Auth;
 
 namespace StudentCRUD.Repository
 {
@@ -9,8 +10,7 @@ namespace StudentCRUD.Repository
 
         Task<bool> RegisterAsync(UserRegisterRequest user);
 
-        Task<bool> ForgotPassword(string email);
-
+        Task<bool> ResetPassword(ResetPasswordRequest resetPassword);
 
 
 
